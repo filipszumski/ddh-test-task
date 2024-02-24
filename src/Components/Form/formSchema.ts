@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { formInitialValues } from "./Form";
+import { formInitialValues } from "./useForm";
 
 const REQUIRED_FIELD_MESSAGE = "To pole jest wymagane";
 
