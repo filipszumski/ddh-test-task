@@ -3,13 +3,31 @@ import React from "react";
 import { Input } from "../Input";
 import { Select } from "../Select";
 import { useForm, formInitialValues } from "./useForm";
+import { useFetchDepartments } from "./useFetchDepartments";
+import { Alert } from "../Alert";
 
 export const Form = () => {
   const { formErrors, formState, handleBlur, handleChange, handleSubmit } =
     useForm();
+  const {
+    departments,
+    errorMessage: departmentsErrorMessage,
+    isLoading: isDepartmentsLoading,
+    refetch: refetchDepartments,
+    setErrorMessage: setDepartmentsErrorMessage,
+  } = useFetchDepartments();
 
   return (
     <form className="mt-5" onSubmit={handleSubmit}>
+      {departmentsErrorMessage && (
+        <Alert
+          duration={5000}
+          variant="danger"
+          onClose={() => setDepartmentsErrorMessage("")}
+        >
+          {departmentsErrorMessage}
+        </Alert>
+      )}
       <div className="mb-3">
         <Input
           value={formState.fullName}
@@ -50,10 +68,10 @@ export const Form = () => {
           defaultValue={formInitialValues.department}
           onChange={({ target: { name, value } }) => handleChange(name, value)}
           onBlur={({ target: { name, value } }) => handleBlur(name, value)}
-          options={[
-            { id: "1", name: "Wydział1" },
-            { id: "2", name: "Wydział2" },
-          ]}
+          onClick={() => refetchDepartments()}
+          disabled={isDepartmentsLoading}
+          loading={isDepartmentsLoading}
+          options={departments}
           error={formErrors.department}
           label="Wydział"
           name="department"

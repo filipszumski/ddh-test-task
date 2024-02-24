@@ -2,7 +2,7 @@ import React, { useId } from "react";
 import { InputHTMLAttributes } from "react";
 
 type Option = {
-  id: string;
+  id: number;
   name: string;
 };
 
