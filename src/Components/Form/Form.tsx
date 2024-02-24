@@ -7,8 +7,16 @@ import { useFetchDepartments } from "./useFetchDepartments";
 import { Alert } from "../Alert";
 
 export const Form = () => {
-  const { formErrors, formState, handleBlur, handleChange, handleSubmit } =
-    useForm();
+  const {
+    formErrors,
+    formState,
+    handleBlur,
+    handleChange,
+    handleSubmit,
+    isSubmitting,
+    setSubmissionMessage,
+    submissionMessage,
+  } = useForm();
   const {
     departments,
     errorMessage: departmentsErrorMessage,
@@ -28,6 +36,15 @@ export const Form = () => {
           {departmentsErrorMessage}
         </Alert>
       )}
+      {submissionMessage && (
+        <Alert
+          duration={5000}
+          variant={submissionMessage.type}
+          onClose={() => setSubmissionMessage(null)}
+        >
+          {submissionMessage.message}
+        </Alert>
+      )}
       <div className="mb-3">
         <Input
           value={formState.fullName}
@@ -37,6 +54,7 @@ export const Form = () => {
           error={formErrors.fullName}
           name="fullName"
           placeholder="Imię i nazwisko"
+          disabled={isSubmitting}
         />
       </div>
       <div className="mb-3">
@@ -48,6 +66,7 @@ export const Form = () => {
           error={formErrors.birthDate}
           name="birthDate"
           placeholder="DD/MM/YYYY"
+          disabled={isSubmitting}
         />
       </div>
       <div className="mb-3">
@@ -60,6 +79,7 @@ export const Form = () => {
           name="email"
           type="email"
           placeholder="user@example.com"
+          disabled={isSubmitting}
         />
       </div>
       <div className="mb-3">
@@ -69,7 +89,7 @@ export const Form = () => {
           onChange={({ target: { name, value } }) => handleChange(name, value)}
           onBlur={({ target: { name, value } }) => handleBlur(name, value)}
           onClick={() => refetchDepartments()}
-          disabled={isDepartmentsLoading}
+          disabled={isDepartmentsLoading || isSubmitting}
           loading={isDepartmentsLoading}
           options={departments}
           error={formErrors.department}
@@ -87,10 +107,15 @@ export const Form = () => {
           error={formErrors.termsOfUse}
           name="termsOfUse"
           type="checkbox"
+          disabled={isSubmitting}
         />
       </div>
       <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-        <button type="submit" className="btn btn-primary">
+        <button
+          disabled={isSubmitting}
+          type="submit"
+          className="btn btn-primary"
+        >
           Zapisz
         </button>
       </div>

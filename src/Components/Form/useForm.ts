@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import { z } from "zod";
 
 import { formSchema } from "./formSchema";
+import { registerUser } from "../../api/registerUser";
 
 const isKeyofFormErrors = (key: unknown): key is keyof FormErrorsState => {
   if (typeof key === "string" && key in formInitialValues) {
@@ -13,9 +14,13 @@ const isKeyofFormErrors = (key: unknown): key is keyof FormErrorsState => {
   );
 };
 
-type FormState = z.infer<typeof formSchema>;
+export type FormState = z.infer<typeof formSchema>;
 type FormStateValue = FormState[keyof FormState];
 type FormErrorsState = Partial<Record<keyof FormState, string>>;
+type SubmissionMessage = {
+  type: "danger" | "success";
+  message: string;
+} | null;
 
 export const formInitialValues = {
   fullName: "",
@@ -28,10 +33,43 @@ export const formInitialValues = {
 export const useForm = () => {
   const [formState, setFormState] = useState<FormState>(formInitialValues);
   const [formErrors, setFormErrors] = useState<FormErrorsState>({});
+  const [validated, setValidated] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionMessage, setSubmissionMessage] =
+    useState<SubmissionMessage>(null);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: Wyślij dane
+    const parsedFormValues = formSchema.safeParse(formState);
+    if (parsedFormValues.success) {
+      try {
+        setIsSubmitting(true);
+        await registerUser(formState);
+        setSubmissionMessage({
+          type: "success",
+          message: "User was successfully registered!",
+        });
+        setFormState(formInitialValues);
+        setValidated(false);
+      } catch (e) {
+        setSubmissionMessage({
+          type: "danger",
+          message: "An error ocurred while registering user",
+        });
+      }
+      setIsSubmitting(false);
+    } else {
+      const newErrorsMap = new Map<keyof FormState, string>();
+      const issues = parsedFormValues.error.issues;
+      issues.forEach((issue) => {
+        const key = issue.path[0];
+        if (isKeyofFormErrors(key) && !newErrorsMap.has(key)) {
+          newErrorsMap.set(key, issue.message);
+        }
+      });
+      setFormErrors(Object.fromEntries(newErrorsMap));
+      setValidated(true);
+    }
   };
 
   const validateField = (key: string, value: FormStateValue) => {
@@ -50,6 +88,10 @@ export const useForm = () => {
   };
 
   const handleChange = (name: string, value: FormStateValue) => {
+    if (validated) {
+      validateField(name, value);
+    }
+
     setFormState((prev) => ({
       ...prev,
       [name]: value,
@@ -66,5 +108,8 @@ export const useForm = () => {
     handleSubmit,
     handleChange,
     handleBlur,
+    submissionMessage,
+    setSubmissionMessage,
+    isSubmitting,
   };
 };
