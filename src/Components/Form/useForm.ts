@@ -44,17 +44,17 @@ export const useForm = () => {
     if (parsedFormValues.success) {
       try {
         setIsSubmitting(true);
-        await registerUser(formState);
+        await registerUser(parsedFormValues.data);
         setSubmissionMessage({
           type: "success",
-          message: "User was successfully registered!",
+          message: "Dane zostały poprawnie zapisane",
         });
         setFormState(formInitialValues);
         setValidated(false);
       } catch (e) {
         setSubmissionMessage({
           type: "danger",
-          message: "An error ocurred while registering user",
+          message: "Wystąpił błąd podczas zapisywania danych",
         });
       }
       setIsSubmitting(false);

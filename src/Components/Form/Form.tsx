@@ -97,7 +97,7 @@ export const Form = () => {
           name="department"
         />
       </div>
-      <div className="form-check">
+      <div className="form-check mb-3">
         <Input
           checked={formState.termsOfUse}
           onChange={({ target: { name, checked } }) =>

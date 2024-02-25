@@ -4,32 +4,29 @@ import { Department, getDepartments } from "../../api/getDepartments";
 
 export const useFetchDepartments = () => {
   const [departments, setDepartments] = useState<Department[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
-  const [shouldFetch, setShouldFetch] = useState(true);
 
   const refetch = () => {
     if (!isLoading && (errorMessage || !departments.length)) {
-      setShouldFetch(true);
+      setIsLoading(true);
     }
   };
 
   useEffect(() => {
-    if (shouldFetch) {
+    if (isLoading) {
       (async () => {
         try {
-          setIsLoading(true);
           const data = await getDepartments();
           setDepartments(data);
           setErrorMessage("");
         } catch (e) {
-          setErrorMessage("An error occurred while fetching departments");
+          setErrorMessage("Wystąpił błąd podczas pobierania danych");
         }
         setIsLoading(false);
-        setShouldFetch(false);
       })();
     }
-  }, [shouldFetch]);
+  }, [isLoading]);
 
   return {
     departments,

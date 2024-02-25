@@ -5,14 +5,27 @@ import { formInitialValues } from "./useForm";
 const REQUIRED_FIELD_MESSAGE = "To pole jest wymagane";
 
 export const formSchema = z.object({
-  fullName: z.string().min(1, REQUIRED_FIELD_MESSAGE),
+  fullName: z
+    .string()
+    .trim()
+    .min(1, REQUIRED_FIELD_MESSAGE)
+    .regex(/^[\p{L} ,.'-]+$/u, {
+      message: "Pole zawiera niedozwolone znaki",
+    }),
   birthDate: z
     .string()
+    .trim()
     .min(1, REQUIRED_FIELD_MESSAGE)
+    .transform((input) =>
+      input
+        .split("/")
+        .map((el) => el.trim())
+        .join("/")
+    )
     .superRefine((value, ctx) => {
-      const parts = value.split("/");
+      const pattern = new RegExp("^\\d{2}\\/\\d{2}\\/\\d{4}$");
 
-      if (parts.length !== 3) {
+      if (!pattern.test(value)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Błędny format daty (DD/MM/YYYY)",
@@ -20,6 +33,7 @@ export const formSchema = z.object({
         return;
       }
 
+      const parts = value.split("/");
       const [day, month, year] = parts.map(Number);
 
       if (day < 1 || day > 31) {
@@ -36,7 +50,7 @@ export const formSchema = z.object({
         });
         return;
       }
-      if (year < 1900 || year > 2099) {
+      if (year < 1900 || year > new Date().getFullYear()) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Błędny rok",
@@ -46,6 +60,7 @@ export const formSchema = z.object({
     }),
   email: z
     .string()
+    .trim()
     .min(1, REQUIRED_FIELD_MESSAGE)
     .email("Błędny format adresu e-mail"),
   department: z
